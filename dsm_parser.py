@@ -60,7 +60,7 @@ class DSNParser:
             self.etab = self.path[index_ + 1:index_dot]
             print(f"Etablissement {self.etab}")
         except:
-            print("Mauvais format ddu nom de fichier, etablissement impossible à déduire")
+            print("Mauvais format du nom de fichier, etablissement impossible à déduire")
 
 class XLWriter:
 
@@ -70,6 +70,7 @@ class XLWriter:
         self.wb: Optional[Workbook] = None
         self.sheet: Optional[Worksheet] = None
         self.row = 3
+        self.nb_warning = 0
 
     def create_and_load(self):
         if not os.path.isfile(self.template_path):
@@ -98,12 +99,18 @@ class XLWriter:
         self.sheet.cell(self.row, 8, s.nature)
         self.sheet.cell(self.row, 9, s.salaire_base)
         self.sheet.cell(self.row, 10, s.montant)
+        if (s.nom == "" or s.prenom == "" or s.statut == "" or s.profession == "" or s.libelle == "" or s.nature == ""
+                or s.salaire_base == "" or s.montant == ""):
+            print(f"Warning: Ce salarie a au moins une valeur vide:  {s}")
+            self.nb_warning += 1
 
     def write(self, salaries: List[Salarie]):
         print(f"Ecriture dans la feuille {self.sheet.title}")
         for s in salaries:
             self.write_salarie(s)
             self.row += 1
+        if self.nb_warning > 0:
+            print(f"Nb warning: {self.nb_warning}")
 
     def save(self):
         print(f"Sauvegarde de {self.out_path}")
@@ -114,6 +121,7 @@ class XLWriter:
             self.wb.save(self.out_path)
 
     def remove_template(self):
+        print("Remove template")
         self.wb = openpyxl.reader.excel.load_workbook(self.out_path)
         self.wb.remove(self.wb["template"])
         self.save()
@@ -148,7 +156,7 @@ class DSNService:
         nom = dsn.value
         row = self.row
         self.row += 1
-        nom = prenom = matricule = statut = profession = libelle = nature = salaire = ""
+        prenom = matricule = statut = profession = libelle = nature = salaire = ""
         montant = 0
         is_montant_010 = False
         while self.row < len(self.dsn_parser.dsns):
@@ -188,6 +196,7 @@ class DSNDirectoryService:
         self.xl_template_path = xl_template_path
         self.nb = 0
         self.nb_salarie = 0
+        self.nb_warning = 0
 
     def guess_xl_name(self):
         xl_name = self.dsn_directory_path.replace("\\", "/")
@@ -221,9 +230,11 @@ class DSNDirectoryService:
                 s = DSNService( self.dsn_directory_path + "/" + f, self.xl_template_path, xl_name)
                 s.start()
                 self.nb_salarie += len(s.salaries)
+                self.nb_warning += s.xl_writer.nb_warning
         s = XLWriter(self.xl_template_path, xl_name)
         s.remove_template()
         print(f"Lecture de {self.nb} fichier(s) DSN et création de {self.nb_salarie} salarié(s)")
+        print(f"Nombre de warning: {self.nb_warning}")
 
 
 if __name__ == '__main__':
