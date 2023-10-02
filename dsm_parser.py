@@ -226,11 +226,8 @@ class DSNDirectoryService:
         print(f"Lecture de {self.nb} fichier(s) DSN et création de {self.nb_salarie} salarié(s)")
 
 
-
-
-
 if __name__ == '__main__':
-    print("DSN Import")
+    print("DSN Parser")
     print("==========")
     print()
     parser = argparse.ArgumentParser(description="DSN Import")

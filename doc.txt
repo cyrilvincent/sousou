@@ -1,0 +1,19 @@
+DSM Parser
+==========
+
+La 1ère fois
+Aller dans le répertoire du fichier dsm_parser.py
+Faire clic-droit > ouvrir un terminal
+Taper python -m pip install -r requirements.txt
+Fermer le terminal
+
+Ensuite
+Aller dans le répertoire du fichier dsm_parser.py
+Créer un répertoire du nom de l'entreprise
+Mettre les fichiers .dsn ou .txt dedans
+Revenir dans le répertoire du ficher dsm_parser.py
+Faire clic-droit > ouvrir un terminal
+Taper python dsm_parser.py nom_repertoire
+Le fichier nom_repertoire.xlsx sera créé
+Attention : à chaque fois que cette commande python est exécutée, le fichier est écrasé, une copie est faite dans un .bak
+Si le répertoire contient un espace entourer le nom du répertoire par des "
