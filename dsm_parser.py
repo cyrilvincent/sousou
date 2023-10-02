@@ -10,7 +10,6 @@ import sys
 import csv
 
 
-
 @dataclass
 class DSN:
 
@@ -46,11 +45,16 @@ class DSNParser:
         with open(self.path) as f:
             reader = csv.reader(f)
             for row in reader:
-                self.row += 1
-                id = row[0]
-                value = row[1][1:-1]
-                dsn = DSN(id, value)
-                self.dsns.append(dsn)
+                try:
+                    self.row += 1
+                    id = row[0]
+                    value = row[1][1:-1]
+                    dsn = DSN(id, value)
+                    self.dsns.append(dsn)
+                except Exception as ex:
+                    print(f"Erreur ligne {self.row}: {row}")
+                    print(ex)
+
         print(f"{len(self.dsns)} lignes chargées")
 
     def parse_etab(self):
@@ -60,7 +64,7 @@ class DSNParser:
             self.etab = self.path[index_ + 1:index_dot]
             print(f"Etablissement {self.etab}")
         except:
-            print("Mauvais format du nom de fichier, etablissement impossible à déduire")
+            print("Mauvais format du nom de fichier, etablissement impossible à déduire à partir du nom de fichier")
 
 class XLWriter:
 
@@ -74,7 +78,7 @@ class XLWriter:
 
     def create_and_load(self):
         if not os.path.isfile(self.template_path):
-            print(f"Erreur: {self.template_path} n'existe pas")
+            print(f"Erreur : {self.template_path} n'existe pas")
             sys.exit(1)
         if not os.path.isfile(self.out_path):
             print(f"Création de {self.out_path}")
@@ -101,7 +105,7 @@ class XLWriter:
         self.sheet.cell(self.row, 10, s.montant)
         if (s.nom == "" or s.prenom == "" or s.statut == "" or s.profession == "" or s.libelle == "" or s.nature == ""
                 or s.salaire_base == "" or s.montant == ""):
-            print(f"Warning: Ce salarie a au moins une valeur vide:  {s}")
+            print(f"Warning : Ce salarie a au moins une valeur vide:  {s}")
             self.nb_warning += 1
 
     def write(self, salaries: List[Salarie]):
@@ -110,7 +114,7 @@ class XLWriter:
             self.write_salarie(s)
             self.row += 1
         if self.nb_warning > 0:
-            print(f"Nb warning: {self.nb_warning}")
+            print(f"Nb warning : {self.nb_warning}")
 
     def save(self):
         print(f"Sauvegarde de {self.out_path}")
@@ -119,13 +123,13 @@ class XLWriter:
         except:
             input(f"Merci de fermer {self.out_path} et d'appuyer sur Entrée")
             self.wb.save(self.out_path)
+        self.wb.close()
 
     def remove_template(self):
-        print("Remove template")
+        print("Effacement du template")
         self.wb = openpyxl.reader.excel.load_workbook(self.out_path)
         self.wb.remove(self.wb["template"])
         self.save()
-
 
 
 class DSNService:
@@ -145,7 +149,7 @@ class DSNService:
             if dsn.id == "S21.G00.30.002":
                 self.parse_salarie(dsn)
             self.row += 1
-        print(f"Nb salarié: {self.nb}")
+        print(f"Nb salarié : {self.nb}")
         self.xl_writer.create_and_load_sheet(self.dsn_parser.etab)
         self.xl_writer.write(self.salaries)
         self.xl_writer.save()
@@ -234,7 +238,7 @@ class DSNDirectoryService:
         s = XLWriter(self.xl_template_path, xl_name)
         s.remove_template()
         print(f"Lecture de {self.nb} fichier(s) DSN et création de {self.nb_salarie} salarié(s)")
-        print(f"Nombre de warning: {self.nb_warning}")
+        print(f"Nombre de warning : {self.nb_warning}")
 
 
 if __name__ == '__main__':
