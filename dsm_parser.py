@@ -30,6 +30,8 @@ class Salarie:
     nature: str
     salaire_base: str #'010'
     montant: float
+    quotite_ref: float
+    quotite_contrat: float
 
 class DSNParser:
 
@@ -103,9 +105,11 @@ class XLWriter:
         self.sheet.cell(self.row, 8, s.nature)
         self.sheet.cell(self.row, 9, s.salaire_base)
         self.sheet.cell(self.row, 10, s.montant)
+        self.sheet.cell(self.row, 11, s.quotite_ref)
+        self.sheet.cell(self.row, 12, s.quotite_contrat)
         if (s.nom == "" or s.prenom == "" or s.statut == "" or s.profession == "" or s.libelle == "" or s.nature == ""
-                or s.salaire_base == "" or s.montant == ""):
-            print(f"Warning : Ce salarie a au moins une valeur vide:  {s}")
+                or s.salaire_base == "" or s.montant == "" or s.quotite_ref == "" or s.quotite_contrat == ""):
+            print(f"Warning : Ce salarié a au moins une valeur vide:  {s}")
             self.nb_warning += 1
 
     def write(self, salaries: List[Salarie]):
@@ -160,7 +164,7 @@ class DSNService:
         nom = dsn.value
         row = self.row
         self.row += 1
-        prenom = matricule = statut = profession = libelle = nature = salaire = ""
+        prenom = matricule = statut = profession = libelle = nature = salaire = quotite_ref = quotite_contrat = ""
         montant = 0
         is_montant_010 = False
         while self.row < len(self.dsn_parser.dsns):
@@ -177,6 +181,10 @@ class DSNService:
                 libelle = dsn.value
             elif dsn.id == "S21.G00.40.007":
                 nature = dsn.value
+            elif dsn.id == "S21.G00.40.012":
+                quotite_ref = float(dsn.value)
+            elif dsn.id == "S21.G00.40.013":
+                quotite_contrat = float(dsn.value)
             elif dsn.id == "S21.G00.51.011":
                 if dsn.value == "010":
                     salaire = dsn.value
@@ -185,12 +193,13 @@ class DSNService:
                     is_montant_010 = False
             elif dsn.id == "S21.G00.51.013" and is_montant_010:
                 montant = float(dsn.value)
+                is_montant_010 = False
             elif dsn.id == "S21.G00.30.002":
                 self.row -= 1
                 break
             self.row += 1
         salarie = Salarie(row, self.dsn_parser.etab, matricule, nom, prenom, statut, profession, libelle
-                          , nature, salaire, montant)
+                          , nature, salaire, montant, quotite_ref, quotite_contrat)
         self.salaries.append(salarie)
 
 class DSNDirectoryService:
