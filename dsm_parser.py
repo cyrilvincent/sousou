@@ -66,7 +66,7 @@ class DSNParser:
             self.etab = self.path[index_ + 1:index_dot]
             print(f"Etablissement {self.etab}")
         except:
-            print("Mauvais format du nom de fichier, etablissement impossible à déduire à partir du nom de fichier")
+            print("Mauvais format du nom de fichier, établissement impossible à déduire à partir du nom de fichier")
 
 class XLWriter:
 
